@@ -6,9 +6,11 @@ import { ConfigModule } from '@nestjs/config';
 import * as Joi from '@hapi/joi';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DatabaseConfigurationService } from './database/databaseConfiguration.service';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
+    UserModule,
     TagModule,
     ConfigModule.forRoot({
       isGlobal: true,
