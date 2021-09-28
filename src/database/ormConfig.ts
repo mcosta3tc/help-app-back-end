@@ -7,4 +7,8 @@ export = {
   database: process.env.DB_NAME,
   entities: [__dirname + process.env.ENTITIES_LOCATION],
   synchronize: Boolean(process.env.DB_NAME),
+  migrations: [__dirname + process.env.MIGRATIONS_LOCATION],
+  cli: {
+    migrationsDir: process.env.MIGRATION_DIR,
+  },
 };
