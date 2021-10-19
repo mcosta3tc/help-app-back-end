@@ -3,7 +3,8 @@ import { PostService } from './post.service';
 import { AuthGuard } from '../guards/auth.guard';
 import { UserEntity } from '../user/user.entity';
 import { User } from '../user/decorator/user.decorator';
-import { PostEntity } from './post.entity';
+import { PostResponseInterface } from './types/postResponse.interface';
+import { CreatePostDto } from './dto/createPost.dto';
 
 @Controller('post')
 export class PostController {
@@ -13,8 +14,10 @@ export class PostController {
   @UseGuards(AuthGuard)
   async createPost(
     @User() currentUser: UserEntity,
-    @Body('article') createdPost: PostEntity,
-  ) {
-    return this.postService.createPost(currentUser, createdPost);
+    @Body('post') createdPostDto: CreatePostDto,
+  ): Promise<PostResponseInterface> {
+    const post = await this.postService.createPost(currentUser, createdPostDto);
+
+    return this.postService.buildArticleResponse(post);
   }
 }
