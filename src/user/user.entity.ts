@@ -18,6 +18,9 @@ export class UserEntity {
   @Column({ select: false })
   password: string;
 
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdAt: Date;
+
   @BeforeInsert()
   async hashPassword() {
     this.password = await hash(this.password, 10);
