@@ -1,4 +1,11 @@
-import { BeforeUpdate, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  BeforeUpdate,
+  Column,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { UserEntity } from '../user/user.entity';
 
 @Entity('posts')
 export class PostEntity {
@@ -13,6 +20,9 @@ export class PostEntity {
 
   @Column({ default: '' })
   description: string;
+
+  @Column({ default: '' })
+  content: string;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
@@ -30,4 +40,7 @@ export class PostEntity {
   updateTimestamp() {
     this.updatedAt = new Date();
   }
+
+  @ManyToOne(() => UserEntity, (creator) => creator.posts)
+  creator: UserEntity;
 }
