@@ -22,7 +22,10 @@ export class PostService {
     );
   }
 
-  async createPost(currentUser: UserEntity, createPostDto: CreatePostDto) {
+  async createPost(
+    currentUser: UserEntity,
+    createPostDto: CreatePostDto,
+  ): Promise<PostEntity> {
     const post = new PostEntity();
 
     Object.assign(post, createPostDto);
@@ -43,7 +46,11 @@ export class PostService {
   }
 
   async findPostBySlug(slug: string): Promise<PostEntity> {
-    return await this.postRepository.findOne({ slug });
+    const post = await this.postRepository.findOne({ slug });
+    if (!post) {
+      throw new HttpException('Not found', HttpStatus.NOT_FOUND);
+    }
+    return post;
   }
 
   async deletePostById(
@@ -52,14 +59,25 @@ export class PostService {
   ): Promise<DeleteResult> {
     const post = await this.findPostBySlug(slug);
 
-    if (!post) {
-      throw new HttpException('Not found', HttpStatus.NOT_FOUND);
-    }
-
     if (post.creator.id !== currentUserId) {
       throw new HttpException('Not allowed', HttpStatus.FORBIDDEN);
     }
 
     return await this.postRepository.delete({ slug });
+  }
+
+  async updatePost(
+    currentUserId: string,
+    slug: string,
+    updatedPost: CreatePostDto,
+  ): Promise<PostEntity> {
+    const post = await this.findPostBySlug(slug);
+
+    if (post.creator.id !== currentUserId) {
+      throw new HttpException('Not allowed', HttpStatus.FORBIDDEN);
+    }
+
+    Object.assign(post, updatedPost);
+    return this.postRepository.save(post);
   }
 }
