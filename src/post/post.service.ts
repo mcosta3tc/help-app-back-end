@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PostEntity } from './post.entity';
-import { Repository } from 'typeorm';
+import { DeleteResult, Repository } from 'typeorm';
 import { UserEntity } from '../user/user.entity';
 import { CreatePostDto } from './dto/createPost.dto';
 import { PostResponseInterface } from './types/postResponse.interface';
@@ -44,5 +44,22 @@ export class PostService {
 
   async findPostBySlug(slug: string): Promise<PostEntity> {
     return await this.postRepository.findOne({ slug });
+  }
+
+  async deletePostById(
+    currentUserId: string,
+    slug: string,
+  ): Promise<DeleteResult> {
+    const post = await this.findPostBySlug(slug);
+
+    if (!post) {
+      throw new HttpException('Not found', HttpStatus.NOT_FOUND);
+    }
+
+    if (post.creator.id !== currentUserId) {
+      throw new HttpException('Not allowed', HttpStatus.FORBIDDEN);
+    }
+
+    return await this.postRepository.delete({ slug });
   }
 }

@@ -35,12 +35,11 @@ export class PostEntity {
 
   @Column({ default: 0 })
   nbrLikes: number;
+  @ManyToOne(() => UserEntity, (creator) => creator.posts, { eager: true })
+  creator: UserEntity;
 
   @BeforeUpdate()
   updateTimestamp() {
     this.updatedAt = new Date();
   }
-
-  @ManyToOne(() => UserEntity, (creator) => creator.posts)
-  creator: UserEntity;
 }
