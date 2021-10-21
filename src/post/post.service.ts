@@ -41,4 +41,8 @@ export class PostService {
   buildArticleResponse(post: PostEntity): PostResponseInterface {
     return { post };
   }
+
+  async findPostBySlug(slug: string): Promise<PostEntity> {
+    return await this.postRepository.findOne({ slug });
+  }
 }
