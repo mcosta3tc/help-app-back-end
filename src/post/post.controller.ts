@@ -6,6 +6,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   UseGuards,
   UsePipes,
   ValidationPipe,
@@ -16,6 +17,7 @@ import { UserEntity } from '../user/user.entity';
 import { User } from '../user/decorator/user.decorator';
 import { PostResponseInterface } from './types/postResponse.interface';
 import { CreatePostDto } from './dto/createPost.dto';
+import { AllPostsResponseInterface } from './types/AllPostsResponseInterface';
 
 @Controller('post')
 export class PostController {
@@ -31,6 +33,14 @@ export class PostController {
     const post = await this.postService.createPost(currentUser, createdPostDto);
 
     return this.postService.buildArticleResponse(post);
+  }
+
+  @Get()
+  async getAllPost(
+    @User('id') activeUserId: string,
+    @Query() queryParam: any,
+  ): Promise<AllPostsResponseInterface> {
+    return this.postService.findAllPosts(activeUserId, queryParam);
   }
 
   @Get(':slug')

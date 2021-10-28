@@ -1,17 +1,20 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PostEntity } from './post.entity';
-import { DeleteResult, Repository } from 'typeorm';
+import { DeleteResult, getRepository, Repository } from 'typeorm';
 import { UserEntity } from '../user/user.entity';
 import { CreatePostDto } from './dto/createPost.dto';
 import { PostResponseInterface } from './types/postResponse.interface';
 import slugify from 'slugify';
+import { AllPostsResponseInterface } from './types/AllPostsResponseInterface';
 
 @Injectable()
 export class PostService {
   constructor(
     @InjectRepository(PostEntity)
     private readonly postRepository: Repository<PostEntity>,
+    @InjectRepository(UserEntity)
+    private readonly userRepository: Repository<UserEntity>,
   ) {}
 
   private static getSlug(title: string): string {
@@ -79,5 +82,47 @@ export class PostService {
 
     Object.assign(post, updatedPost);
     return this.postRepository.save(post);
+  }
+
+  async findAllPosts(
+    activeUserId: string,
+    queryParam: any,
+  ): Promise<AllPostsResponseInterface> {
+    const queryBuilder = getRepository(PostEntity)
+      .createQueryBuilder('posts')
+      .leftJoinAndSelect('posts.creator', 'creator')
+      .orderBy('posts.createdAt', 'DESC');
+
+    const allPostsCount = await queryBuilder.getCount();
+
+    if (queryParam.limit) {
+      queryBuilder.limit(queryParam.limit);
+    }
+
+    if (queryParam.offset) {
+      queryBuilder.offset(queryParam.offset);
+    }
+
+    if (queryParam.tag) {
+      queryBuilder.andWhere('posts.tagList LIKE :tag', {
+        tag: `%${queryParam.tag}%`,
+      });
+    }
+
+    if (queryParam.creator) {
+      const creator = await this.userRepository.findOne({
+        username: queryParam.creator,
+      });
+      queryBuilder.andWhere('posts.creatorId = :id', {
+        id: creator.id,
+      });
+    }
+
+    const allPosts = await queryBuilder.getMany();
+
+    return {
+      allPosts,
+      allPostsCount,
+    };
   }
 }
