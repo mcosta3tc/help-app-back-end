@@ -51,6 +51,16 @@ export class PostController {
     return this.postService.buildArticleResponse(post);
   }
 
+  @Post(':slug/like')
+  @UseGuards(AuthGuard)
+  async likePostBySlug(
+    @User('id') currentUserId: string,
+    @Param('slug') slug: string,
+  ): Promise<PostResponseInterface> {
+    const post = await this.postService.addPostToFavorite(currentUserId, slug);
+    return this.postService.buildArticleResponse(post);
+  }
+
   @Delete(':slug')
   @UseGuards(AuthGuard)
   async deletePostBySlug(

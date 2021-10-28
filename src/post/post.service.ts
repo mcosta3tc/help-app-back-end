@@ -125,4 +125,25 @@ export class PostService {
       allPostsCount,
     };
   }
+
+  async addPostToFavorite(
+    currentUserId: string,
+    slug: string,
+  ): Promise<PostEntity> {
+    const post = await this.findPostBySlug(slug);
+    const user = await this.userRepository.findOne(currentUserId, {
+      relations: ['likes'],
+    });
+    const notLiked =
+      user.likes.findIndex((postLike) => postLike.id === post.id) === -1;
+
+    if (notLiked) {
+      user.likes.push(post);
+      post.nbrLikes++;
+      await this.postRepository.save(post);
+      await this.userRepository.save(user);
+    }
+
+    return post;
+  }
 }

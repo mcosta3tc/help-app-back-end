@@ -2,6 +2,8 @@ import {
   BeforeInsert,
   Column,
   Entity,
+  JoinTable,
+  ManyToMany,
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -28,11 +30,15 @@ export class UserEntity {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
 
+  @OneToMany(() => PostEntity, (posts) => posts.creator)
+  posts: PostEntity[];
+
+  @ManyToMany(() => PostEntity)
+  @JoinTable()
+  likes: PostEntity[];
+
   @BeforeInsert()
   async hashPassword() {
     this.password = await hash(this.password, 10);
   }
-
-  @OneToMany(() => PostEntity, (posts) => posts.creator)
-  posts: PostEntity[];
 }
