@@ -146,4 +146,26 @@ export class PostService {
 
     return post;
   }
+
+  async removePostFromFavorite(
+    currentUserId: string,
+    slug: string,
+  ): Promise<PostEntity> {
+    const post = await this.findPostBySlug(slug);
+    const user = await this.userRepository.findOne(currentUserId, {
+      relations: ['likes'],
+    });
+    const postIndex = user.likes.findIndex(
+      (postLike) => postLike.id === post.id,
+    );
+
+    if (postIndex >= 0) {
+      user.likes.splice(postIndex, 1);
+      post.nbrLikes--;
+      await this.postRepository.save(post);
+      await this.userRepository.save(user);
+    }
+
+    return post;
+  }
 }
